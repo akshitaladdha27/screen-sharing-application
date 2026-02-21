@@ -17,17 +17,14 @@ interface Metadata {
 }
 
 export const useScreenShare = () => {
-  // const [status, setStatus] = useState<ScreenStatus>("idle");
   const [metadata, setMetadata] = useState<Metadata | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
 
-  // Initial state ko localStorage se check karo
   const [status, setStatus] = useState<ScreenStatus>(() => {
     const saved = localStorage.getItem("screen_share_status");
     return (saved as ScreenStatus) || "idle";
   });
 
-  // Jab bhi status badle, use save karo
   useEffect(() => {
     localStorage.setItem("screen_share_status", status);
   }, [status]);
@@ -39,8 +36,6 @@ export const useScreenShare = () => {
     }
     setMetadata(null);
     
-    // 🔥 Fix: Sirf tabhi "ended" set karo jab user ne manually stop kiya ho
-    // Ya jab koi active stream sach mein band ho rahi ho.
     if (isManual) {
       setStatus("ended");
     }
@@ -55,8 +50,6 @@ export const useScreenShare = () => {
     try {
       setStatus("requesting");
       
-      // Yahan cleanup call ho raha hai, lekin isManual=false (default)
-      // taaki status "ended" na ho jaye start hote hi.
       if (streamRef.current) {
         streamRef.current.getTracks().forEach((track) => track.stop());
       }
@@ -77,7 +70,7 @@ export const useScreenShare = () => {
       });
 
       track.onended = () => {
-        cleanup(true); // Jab browser se stop karein tab "ended" ho
+        cleanup(true); 
       };
 
       setStatus("granted");
